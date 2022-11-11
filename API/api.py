@@ -1,4 +1,6 @@
-from fastapi import fastAPI
+#!/usr/bin/python
+
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 
