@@ -40,4 +40,5 @@ countries = st.multiselect("Choose stocks to visualize", list_countries)
 
 
 
+
 st.line_chart(data=df, y = 'Country/Region', x = countries)

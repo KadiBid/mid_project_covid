@@ -1,0 +1,12 @@
+geopy
+fastapi
+uvicorn
+pydantic
+pipenv
+streamlit-folium
+dotenv
+os
+sys
+psycopg2
+sqlalchemy 
+geopy.geocoders
