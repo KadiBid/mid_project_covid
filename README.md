@@ -1,6 +1,7 @@
 # mid_project_covid
 
 Name: Khadija El Abidi
+
 Dataset: Covid
 
 Chart that shows covid cases by country.

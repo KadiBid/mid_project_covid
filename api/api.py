@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI, Response
 from fastapi.responses import JSONResponse
+from data.config import DBURL
 
 headers = {'content-type': 'charset=utf-8'}
 app = FastAPI()
@@ -13,3 +14,4 @@ async def index():
     return JSONResponse(content=content, headers = headers)
 
 print("Servidor de la API...")
+

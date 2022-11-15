@@ -1,0 +1,1 @@
+python tools/load_dataset.py dataset_covid/confirmed_global.csv dataset_covid/deaths_global.csv dataset_covid/recovered_global.csv
