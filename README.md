@@ -1,5 +1,8 @@
 # mid_project_covid
 
+Name: Khadija El Abidi
+Dataset: Covid
+
 Chart that shows covid cases by country.
  
 1. Design database
@@ -9,9 +12,7 @@ Chart that shows covid cases by country.
         1.1.3 File missing values of latitude and longitude
     1.2 Connect to PostgreSQL
 
-
 2. Design the API
-
 
 3. Program the API
 
