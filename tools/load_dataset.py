@@ -40,35 +40,26 @@ for df in [df_confirmed, df_death, df_recovered]:
     df.rename(columns = {'Country/Region':'country', 'Province/State':'province', 'Lat':'lat', 'Long':'long'}, inplace=True)
 
 
-# Generate zones dataframe
-df_zones = df_confirmed.groupby(['country'], as_index=False).agg(lambda x: x.iloc[0])
+# Generate countries dataframe
+df_countries = df_confirmed.groupby(['country'], as_index=False).agg(lambda x: x.iloc[0])
 
 
 # Regenerate Latitude and Longitude on the following cases:
 #   a. They have an invalid value (0 or NaN).
 #   b. The latitude refers to a specific province and not the country itself.
-rows = df_zones[
-    (df_zones['lat'] == 0 ) | (df_zones['long'] == 0) |
-    (pd.isna(df_zones['province']) == False)
+rows = df_countries[
+    (df_countries['lat'] == 0 ) | (df_countries['long'] == 0) |
+    (pd.isna(df_countries['province']) == False)
 ]
 
 geolocator = Nominatim(user_agent="covid")
 for row in rows.iterrows():
     country = row[1]['country']
     location = geolocator.geocode(country)
-    df_zones.loc[row[0], ['lat']] = location.latitude
-    df_zones.loc[row[0], ['long']] = location.longitude
+    df_countries.loc[row[0], ['lat']] = location.latitude
+    df_countries.loc[row[0], ['long']] = location.longitude
 
-df_zones = df_zones[['country', 'lat', 'long']]
-
-
-
-
-# Connecting dataframe zones to Postgres
-db = create_engine(os.getenv('POSTGRES_URI'))
-con = db.connect()
-df_zones.to_sql(name='zones', con=con, if_exists='replace')
-
+df_countries = df_countries[['country', 'lat', 'long']]
 
 
 
@@ -113,62 +104,19 @@ for day in days_list:
        
 # Generate a dataframe of cases
  
-df_cases = pd.DataFrame(columns=['country', 'day', 'confirmed', 'death', 'recovered'])
+#df_cases = pd.DataFrame(columns=['country', 'day', 'confirmed', 'death', 'recovered'])
 
 df_cases = pd.DataFrame(cases_list)
 
 
-# Connecting dataframe cases to Postgres
+# Uploading dataframe cases and countries to Postgres
 db = create_engine(os.getenv('POSTGRES_URI'))
 con = db.connect()
+
+# TODO: en bd de countries poner id en lugar de index
+# TODO: en la bd de cases añadir country_id cogiendo el id de countries
+
+
 df_cases.to_sql(name='cases', con=con, if_exists='replace')
-
-
-
-
-
-exit(0)
-
-
-
-# Generate zones dataframe.
-df_zones = df_confirmed[['country']]
-
-# Generate latitudes and longitudes for all countries
-#df_zones['lat'] = None
-#df_zones['long'] = None
-
-
-
-
-
-geolocator = Nominatim(user_agent="covid")
-for row in df_zones.iterrows():
-    country = row[1]['country']
-    print(country) 
-    location = geolocator.geocode(country)
-    df_zones.loc[row[0], ['lat']] = location.latitude
-    df_zones.loc[row[0], ['long']] = location.longitude  
-
-
-
-
-
-
-# Remove the state column
-
-df_confirmed.drop('Province/State', axis = 1, inplace=True)
-df_death.drop('Province/State', axis = 1, inplace=True)
-df_recovered.drop('Province/State', axis = 1, inplace=True)
-
-# Remove the lat and long column - this information will be placed on the zones dataframe.
-
-df_confirmed.drop(['Lat', 'Long'], axis = 1, inplace=True)
-df_death.drop(['Lat', 'Long'], axis = 1, inplace=True)
-df_recovered.drop(['Lat', 'Long'], axis = 1, inplace=True)
-
-
-
-
-
+df_countries.to_sql(name='countries', con=con, if_exists='replace')
 
