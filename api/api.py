@@ -59,7 +59,11 @@ async def get_country(country_id):
         'name': res[0][1],
         'lat': res[0][2],
         'long': res[0][3],
-        'cases': []
+        'cases': [],
+        'day': [],
+        'confirmed': [],
+        'deaths': [],
+        'recovered': []
     }
 
     res = list(con.execute(f"SELECT * FROM cases WHERE country = '{name}'"))
@@ -67,16 +71,54 @@ async def get_country(country_id):
         data['cases'].append({
             'day': r[2],
             'confirmed': r[3],
-            'death': r[4],
+            'deaths': r[4],
             'recovered': r[5]
         })
+        data['day'].append({'day': r[2]})
+        data['confirmed'].append({'confirmed': r[3]})
+        data['deaths'].append({'deaths': r[4]})
+        data['recovered'].append({'recovered': r[5]})
     
     return Response(content=json.dumps(data), media_type="text/json")
 
 
+
+# Get confirmed cases of a country
+
+@app.get("/country/confirmed")
+async def get_country(country):
+    confirmed = list(con.execute(f'SELECT confirmed FROM cases WHERE index = '))
+    return Response(content=json.dumps(confirmed), media_type="text/json")
+    
+    
+ 
+    
+# Get max num of confirmed, deaths and recovered
+
+@app.get("/max_cases/")
+async def get_max_cases():
+    max_recov = list(con.execute(f'SELECT MAX(recovered) FROM cases'))
+    max_confi = list(con.execute(f'SELECT MAX(confirmed) FROM cases'))
+    max_death = list(con.execute(f'SELECT MAX(death) FROM cases'))
+    
+    max_cases = [ max_confi, max_death, max_recov]
+
+    return Response(content=json.dumps(max_cases), media_type="text/json")
+    
+    
+    
+
+
+# Get cases of a country in a specific day
+
 @app.get("/country/{country_id}/day/{d}/{m}/{y}")
 async def get_country_day(country_id, d, m, y):
-    return
+    cases_day = f"SELECT confirmed, death, recovered FROM cases WHERE 'day' = '{d}/{m}/{y}' and country = '{country_id}'"
+    
+    return Response(content=json.dumps(cases_day), media_type="text/json")
+
+
+
 
 # Get all information about countries
 

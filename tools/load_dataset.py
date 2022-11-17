@@ -72,7 +72,7 @@ df_death = df_death.groupby(['country'], as_index=False).agg('sum')
 df_recovered = df_recovered.groupby(['country'], as_index=False).agg('sum')
 
 
-# Generate list of days
+# Generate list of days (datetime type)
 days_list = []
 for df in [df_confirmed, df_death, df_recovered]:
     days_list += list(df.columns[1:])
@@ -80,15 +80,14 @@ days_list = sorted(list(set(days_list)), key=lambda x: datetime.strptime(x, "%m/
 
 
 # Generate a list of countries
-counties_list = list(df_confirmed['country'])
+countries_list = list(df_confirmed['country'])
 
 
 # Generate a list of cases
 
 cases_list = [] 
 for day in days_list:    
-    for country in counties_list:
-        # TODO: Fill that information from dataframes.
+    for country in countries_list:
         confirmed = int(df_confirmed.loc[df_confirmed['country'] == country][day])
         death = int(df_death.loc[df_death['country'] == country][day])
         recovered = int(df_recovered.loc[df_recovered['country'] == country][day])
@@ -101,10 +100,10 @@ for day in days_list:
         }
         cases_list.append(e)
 
-       
-# Generate a dataframe of cases
+df_cases = df_cases.SELECT countries.index as country_id, cases.country, cases.day, cases.confirmed, cases.death, cases.recovered
+FROM cases INNER JOIN  countries
+on cases.country = countries.country;
  
-#df_cases = pd.DataFrame(columns=['country', 'day', 'confirmed', 'death', 'recovered'])
 
 df_cases = pd.DataFrame(cases_list)
 
@@ -115,6 +114,7 @@ con = db.connect()
 
 # TODO: en bd de countries poner id en lugar de index
 # TODO: en la bd de cases añadir country_id cogiendo el id de countries
+
 
 
 df_cases.to_sql(name='cases', con=con, if_exists='replace')
