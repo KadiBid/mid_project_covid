@@ -6,16 +6,10 @@ import pandas as pd
 import sys
 import os
 from datetime import datetime
-#from data.config import POSTGRES_URI
 import psycopg2
 from sqlalchemy import create_engine
 from geopy.geocoders import Nominatim 
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-
-POSTGRES_URI = os.getenv("POSTGRES_URI")
+from config import POSTGRES_URI
 
 
 if len(sys.argv) != 4:
@@ -62,7 +56,6 @@ for row in rows.iterrows():
 df_countries = df_countries[['country', 'lat', 'long']]
 
 
-
 # Aggregate cases with the same country.
 for df in [df_confirmed, df_death, df_recovered]:
     df.drop(['lat', 'long'], axis = 1, inplace=True)
@@ -100,11 +93,6 @@ for day in days_list:
         }
         cases_list.append(e)
 
-df_cases = df_cases.SELECT countries.index as country_id, cases.country, cases.day, cases.confirmed, cases.death, cases.recovered
-FROM cases INNER JOIN  countries
-on cases.country = countries.country;
- 
-
 df_cases = pd.DataFrame(cases_list)
 
 
@@ -112,11 +100,9 @@ df_cases = pd.DataFrame(cases_list)
 db = create_engine(os.getenv('POSTGRES_URI'))
 con = db.connect()
 
-# TODO: en bd de countries poner id en lugar de index
-# TODO: en la bd de cases añadir country_id cogiendo el id de countries
-
 
 
 df_cases.to_sql(name='cases', con=con, if_exists='replace')
 df_countries.to_sql(name='countries', con=con, if_exists='replace')
+
 

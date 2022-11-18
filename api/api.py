@@ -48,7 +48,7 @@ def html():
 
 
 
-# Get information (country, lat, long, all cases) from a country id
+# Get information (country, lat, long and all cases) from a country id
 
 @app.get("/country/{country_id}")
 async def get_country(country_id):
@@ -65,7 +65,7 @@ async def get_country(country_id):
         'deaths': [],
         'recovered': []
     }
-
+    
     res = list(con.execute(f"SELECT * FROM cases WHERE country = '{name}'"))
     for r in res:
         data['cases'].append({
@@ -83,39 +83,25 @@ async def get_country(country_id):
 
 
 
-# Get confirmed cases of a country
-
-@app.get("/country/confirmed")
-async def get_country(country):
-    confirmed = list(con.execute(f'SELECT confirmed FROM cases WHERE index = '))
-    return Response(content=json.dumps(confirmed), media_type="text/json")
-    
-    
- 
-    
-# Get max num of confirmed, deaths and recovered
-
-@app.get("/max_cases/")
-async def get_max_cases():
-    max_recov = list(con.execute(f'SELECT MAX(recovered) FROM cases'))
-    max_confi = list(con.execute(f'SELECT MAX(confirmed) FROM cases'))
-    max_death = list(con.execute(f'SELECT MAX(death) FROM cases'))
-    
-    max_cases = [ max_confi, max_death, max_recov]
-
-    return Response(content=json.dumps(max_cases), media_type="text/json")
-    
-    
-    
-
-
 # Get cases of a country in a specific day
-
-@app.get("/country/{country_id}/day/{d}/{m}/{y}")
-async def get_country_day(country_id, d, m, y):
-    cases_day = f"SELECT confirmed, death, recovered FROM cases WHERE 'day' = '{d}/{m}/{y}' and country = '{country_id}'"
+# TODO: NOT FOUND
+@app.get("/country/{country_id}/day/{m}/{d}/{y}")
+async def get_country_day(country_id, m, d, y):
+    res = list(con.execute(f'SELECT * FROM countries WHERE index = {country_id}'))
+    name = res[0][1]
     
-    return Response(content=json.dumps(cases_day), media_type="text/json")
+    res = list(con.execute(f"SELECT * FROM cases WHERE 'day' = '{m}/{d}/{y}' and country = '{name}'"))
+    data = []
+    print(res)
+    
+    for r in res:
+        data.append({
+            'confirmed': r[3],
+            'deaths': r[4],
+            'recovered': r[5]
+        })
+        
+    return Response(content=json.dumps(data), media_type="text/json")
 
 
 
@@ -136,3 +122,40 @@ async def get_countries():
         })
     
     return Response(content=json.dumps(data), media_type="text/json")
+
+
+
+
+
+
+
+
+
+
+
+# Get max num of confirmed, deaths and recovered
+
+@app.get("/max_cases/")
+async def get_max_cases():
+    max_recov = list(con.execute(f'SELECT MAX(recovered) FROM cases'))
+    max_confi = list(con.execute(f'SELECT MAX(confirmed) FROM cases'))
+    max_death = list(con.execute(f'SELECT MAX(death) FROM cases'))
+    
+    max_cases = [ max_confi, max_death, max_recov]
+
+    return Response(content=json.dumps(max_cases), media_type="text/json")
+
+
+# Get a list of days
+
+@app.get("/list_days/")  
+async def get_days():
+    res = list(con.execute(f'SELECT DISTINCT day FROM cases'))
+    
+    data = []
+    for r in res:
+        data.append(r[0])
+    
+    return Response(contenct=json.dumpe(data), media_typr="text/json")
+
+
