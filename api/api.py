@@ -62,7 +62,7 @@ async def get_country(country_id):
         'cases': [],
         'day': [],
         'confirmed': [],
-        'deaths': [],
+        'death': [],
         'recovered': []
     }
     
@@ -71,12 +71,12 @@ async def get_country(country_id):
         data['cases'].append({
             'day': r[2],
             'confirmed': r[3],
-            'deaths': r[4],
+            'death': r[4],
             'recovered': r[5]
         })
         data['day'].append({'day': r[2]})
         data['confirmed'].append({'confirmed': r[3]})
-        data['deaths'].append({'deaths': r[4]})
+        data['death'].append({'death': r[4]})
         data['recovered'].append({'recovered': r[5]})
     
     return Response(content=json.dumps(data), media_type="text/json")
@@ -97,7 +97,7 @@ async def get_country_day(country_id, m, d, y):
     for r in res:
         data.append({
             'confirmed': r[3],
-            'deaths': r[4],
+            'death': r[4],
             'recovered': r[5]
         })
         
@@ -133,7 +133,7 @@ async def get_countries():
 
 
 
-# Get max num of confirmed, deaths and recovered
+# Get max num of confirmed, death and recovered
 
 @app.get("/max_cases/")
 async def get_max_cases():
