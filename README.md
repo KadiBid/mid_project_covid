@@ -11,28 +11,34 @@ Name: Khadija El Abidi
 </p>
 
 
-Chart that shows covid cases by country.
- 
-1. Design database
+# Usage #
 
-    1.1 Generate new dataframe: df_countries
-    
-        1.1.1 Rename columns.
-        
-        1.1.2 Remove NaN values and state/region.
-        
-        1.1.3 File missing values of latitude and longitude
-        
-    1.2 Generate new dataframe: df_cases
-    
-    1.3 Connect to PostgreSQL
+## Configure PostgreSQL Database #
 
-2. Design the API
+1. Run your PostgresSQL server (local or cloud).
 
-3. Program the API
+2. Configure .env file with POSTGRES_URI variable.
 
-4. Load data through the API
+## Load Datasets ##
 
-5. Make dashboard
+1. Run script to load datasets.
 
+```bash
+$ run_load_dataset.sh
+```
 
+## Run API ##
+
+1. Run script to launch api.
+
+```bash
+$ run_api.sh
+```
+
+## Run Dashboard ##
+
+1. Run script to launch dashboard.
+
+```bash
+$ run_dashboard.sh
+```
