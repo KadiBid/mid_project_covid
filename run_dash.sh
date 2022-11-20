@@ -1,1 +1,0 @@
-streamlit run dashboard/ldashboard.py http://localhost:8000/

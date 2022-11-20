@@ -1,0 +1,1 @@
+streamlit run dashboard/dashboard.py http://localhost:8000

@@ -1,1 +1,1 @@
-python api/api.py uvicorn api:app --reload
+cd api && uvicorn api:app --reload  && cd -

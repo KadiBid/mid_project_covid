@@ -3,16 +3,12 @@
 #           python dashboard.py <api_url>
 
 import sys
-import os
 import pandas as pd
 import streamlit as st
+from streamlit_folium import folium_static
+import folium
 import altair as alt
 import requests
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import RendererAgg
-import numpy as np
-
 
 if len(sys.argv) != 2:
     print("Error! Missing parametrs: ")
@@ -26,89 +22,113 @@ st.title('COVID dashboard')
 st.text("Showing COVID data") 
 
 
-# Get a list of countries and a list of Ids
+# Get all countries
 resp = requests.get(f'{api_url}/countries').json()
 
-countries = {}
+all_countries = {}
 for r in resp:
-    countries[r['name']] = r
-    
-
-#TODO: NO CUNCIONA EL SELECTED COUNTRY
-# CONNECT TO STREAMLIT -> 
-selected_country = st.multiselect("Choose stocks to visualize", countries)
+    all_countries[r['name']] = r
+       
+# Creating multiselect bar
+multiselect_countries = st.multiselect("Choose countries to visualize", all_countries, ['Spain'])
 
 
-# Show cases about country selected
+# Get all information about countries, included cases
+df_list = []
 
-for sc in selected_country:
-    country_id = countries[sc]['id']
-    resp = requests.get(f'{api_url}/country/{country_id}').json()
-    countries[sc]['cases'] = resp['cases']
-    # this a list of {day:... , confirmed: ... , death: ... , recovered: ...}
-    # here countries = a lis of countries info and cases of the selected country
+selected_countries = {}
+for country in multiselect_countries:
+    country_id = all_countries[country]['id']
+    selected_countries[country] = requests.get(f'{api_url}/country/{country_id}').json()
+
+    # Creating dataframe per country
+    df = pd.DataFrame(selected_countries[country]['cases'])
+    df['country'] = selected_countries[country]['name']
+    df['current_day'] = False
+    df.iloc[-1, df.columns.get_loc('current_day')] = True
+    df_list.append(df)
 
 
-#iterar sobre la lista de list_cases(iterar sobre los diccionarios)
+# Creating one dataframe with all dataframes
+df_all = pd.concat(df_list, ignore_index=True)
+
+
+# Create a box with types of cases
+cases_type = st.selectbox("Select type of cases", ['confirmed', 'death', 'recovered'])
+
+
+# Creating Chart
+chart = (
+    alt.Chart(df_all)
+    .mark_line()
+    .encode(
+        x = 'day:T',
+        y = f'{cases_type}:Q',
+        color = 'country:N'))
+
+st.altair_chart(chart, use_container_width=True)
+
+
+# Creating a Mark Char with total data about countries
+
+df_current_day = df_all[df_all['current_day'] == True]
     
-    day = []
-    for dict in resp['day']:
-        print(dict)
-        day.append(dict) # ......
-    
-    
-    confirmed = []
-    for dict in resp['confirmed']:
-        confirmed.append(dict['confirmed'])
-    
-    deaths = []
-    for dict in resp['deaths']:
-        deaths.append(dict['deaths'])
-    
-    recovered = []
-    for dict in resp['recovered']:
-        recovered.append(dict['recovered'])
+chart = (alt.Chart(df_current_day)
+         .mark_circle()
+         .encode(
+             x = 'confirmed', 
+             y = 'death',
+             tooltip=['country', 'confirmed', 'death']))
+
+st.altair_chart(chart, use_container_width=True)
+
+
+
+
+
+# Map
+# Center on country, add marker
+
+
+st.title('COVID World Map')
+
+show_all_countries = st.checkbox("show all countries", value=False)
+
+if show_all_countries:
+    df_list = []
+    for country in all_countries:
+        country_id = all_countries[country]['id']
+        print(all_countries[country])
         
+        resp = requests.get(f'{api_url}/country/{country_id}')
+        print(resp.text)
+        
+        all_countries[country] = requests.get(f'{api_url}/country/{country_id}').json()
+        
+        df = pd.DataFrame(all_countries[country]['cases'])
+        df['country'] = all_countries[country]['name']
+        df['current_day'] = False
+        df.iloc[-1, df.columns.get_loc('current_day')] = True
+        df_list.append(df)
+    df_all = pd.concat(df_list, ignore_index=True)
     
+    df_current_day = df_all[df_all['current_day'] == True]   
 
-    datos = [range(len(day)), confirmed, deaths, recovered]
-    df = pd.DataFrame(datos)
-    
-    c = alt.Chart(df).mark_circle().encode(
-    x='day', y='cases', tooltip=['day', 'cases'])
+country_shapes = requests.get("https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json").json()
 
+map = folium.Map()
 
-    st.altair_chart(c, use_container_width=True)
+M=1000000
+folium.Choropleth(
+    geo_data=country_shapes,
+    data=df_current_day,
+    columns=['country', 'confirmed'],
+    key_on='feature.properties.name',
+    fill_color='YlGn',
+    highlight = True,
+    bins=[0, 2.5*M,  5*M, 7.5*M, 10*M, 20*M, 30*M, 40*M],
+    nan_fill_color='grey'
+).add_to(map),
 
-
-
-
-df = pd.DataFrame(
-    np.random.randn(200, 3),
-    columns=['a', 'b', 'c'])
-
-c = alt.Chart(df).mark_circle().encode(
-    x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-st.altair_chart(c, use_container_width=True)
-
-
-
-
-exit(0)
-
-# Get list of cases
-
-res = requests.get(f'{api_url}/country/').json()
-
-
-list_cases = []
-for r in res:
-    res = requests.get(f'{api_url}/country/{country_id}').json()
-    list_cases.append(res['deaths'])
-    
-    
-
-# map with countries
-
+folium_static(map)
 
