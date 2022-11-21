@@ -16,7 +16,6 @@ if len(sys.argv) != 2:
     exit(0)
 
 api_url = sys.argv[1]
-# http://localhost:8000
 
 st.title('COVID dashboard')
 st.text("Showing COVID data") 
@@ -89,7 +88,6 @@ st.altair_chart(chart, use_container_width=True)
 # Map
 # Center on country, add marker
 
-
 st.title('COVID World Map')
 
 show_all_countries = st.checkbox("show all countries", value=False)
@@ -98,10 +96,8 @@ if show_all_countries:
     df_list = []
     for country in all_countries:
         country_id = all_countries[country]['id']
-        print(all_countries[country])
         
         resp = requests.get(f'{api_url}/country/{country_id}')
-        print(resp.text)
         
         all_countries[country] = requests.get(f'{api_url}/country/{country_id}').json()
         

@@ -95,9 +95,9 @@ async def get_countries():
 
 @app.get("/max_cases/")
 async def get_max_cases():
-    max_recov = list(con.execute(f'SELECT MAX(recovered) FROM cases'))
-    max_confi = list(con.execute(f'SELECT MAX(confirmed) FROM cases'))
-    max_death = list(con.execute(f'SELECT MAX(death) FROM cases'))
+    max_recov = list(con.execute('SELECT MAX(recovered) FROM cases'))
+    max_confi = list(con.execute('SELECT MAX(confirmed) FROM cases'))
+    max_death = list(con.execute('SELECT MAX(death) FROM cases'))
     
     max_cases = [ max_confi, max_death, max_recov]
 
@@ -108,7 +108,7 @@ async def get_max_cases():
 
 @app.get("/list_days/")  
 async def get_days():
-    res = list(con.execute(f'SELECT DISTINCT day FROM cases'))
+    res = list(con.execute('SELECT DISTINCT day FROM cases'))
     
     data = []
     for r in res:
